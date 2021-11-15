@@ -77,8 +77,10 @@ if args.generate_neutral_test:
                         if not args.dry_run:
                             with open(out, "w") as outfile:
                                 outfile.write(f"{IMPORT_PREFIX} {os.path.relpath(entry, os.path.dirname(out))}\n")
-                                outfile.write('mmRenderNextFrame()\nmmRenderNextFrame()\nmmScreenshot("result.png")\nmmQuit()\n')
+                                outfile.write('mmSetGUIVisible(false)\nmmRenderNextFrame()\nmmRenderNextFrame()\nmmScreenshot("result.png")\nmmQuit()\n')
     exit(0)
+
+num_found_tests = 0
 
 for directory in args.directories:
     for subdir, dirs, files in os.walk(directory, topdown=True):
@@ -107,6 +109,7 @@ for directory in args.directories:
                     if CAPTURE_STDERR and os.path.isfile(stderrname):
                         os.remove(stderrname)
                     print(f"running test {entry}... ", end='')
+                    num_found_tests = num_found_tests + 1
                     tr = TestResult()
                     tr.testfile=entry
                     tr.passed=True
@@ -164,9 +167,13 @@ for directory in args.directories:
 if args.generate_reference or args.dry_run:
     exit(0)
 
+num_passed_tests = 0
 if len(testresults) > 0:
-    print("\nSummary:")
+    print("\nRecap:")
     for tr in testresults:
         print(f'{tr.testfile}: {"passed" if tr.passed else "failed"} {tr.result}')
+        if tr.passed:
+            num_passed_tests = num_passed_tests + 1
+    print(f"\nSummary: {num_passed_tests}/{num_found_tests} tests passed")
 else:
     print("no tests found.")
