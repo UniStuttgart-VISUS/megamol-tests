@@ -1,10 +1,10 @@
 # example usage (from megamol install/bin):
 # build all neutral tests:
-# ..\..\..\..\test\runtests.py y:\ssd_cache\src\megamol\build\vs-ninja-22\examples --generate-neutral-test
+# ..\..\tests\runtests.py y:\ssd_cache\src\megamol\build\vs-ninja-22\examples --generate-neutral-test
 # generate all references
-# ..\..\..\..\test\runtests.py ..\..\tests --generate-reference
+# ..\..\tests\runtests.py ..\..\tests --generate-reference
 # run tests
-# ..\..\..\..\test\runtests.py ..\..\tests
+# ..\..\test\runtests.py ..\..\tests
 
 import argparse
 import os
@@ -19,6 +19,7 @@ parser.add_argument('directories', nargs="*")
 parser.add_argument('--generate-reference', action='count', help='Generate reference pngs instead of testing against them')
 parser.add_argument('--generate-neutral-test', action='count', help='Generate a first basic test (.1) for all found projects. Supply, e.g., the MegaMol build/examples folder as argument to generate a build/tests folder.')
 parser.add_argument('--force', action='count', help='force overwriting files')
+parser.add_argument('--dry-run', action='count', help='only print actions without performing them')
 args = parser.parse_args()
 
 RESULT_NAME = 'result.png'
@@ -54,6 +55,7 @@ if args.generate_neutral_test:
             relpath = os.path.relpath(subdir, parent)
             pp = list(pathlib.Path(relpath).parts)
             pp[0] = "tests"
+            pp.insert(1, "projects")
             testfolder = pathlib.Path(os.sep.join(map(str,pp)))
             #print(f"I am in subdir {relpath} of dir {parent} and test files would go to {testfolder}")
             for file in files:
@@ -62,16 +64,20 @@ if args.generate_neutral_test:
                 if entry.endswith('.lua'):
                     name, _ = os.path.splitext(file)
                     out = os.path.join(parent, testfolder, name + ".1.lua")
-                    #print(f"I would make {out} from {entry}")
+                    if args.dry_run:
+                        print(f"I would make {out} from {entry}")
                     outpath = os.path.join(parent, testfolder)
                     if not os.path.isdir(outpath):
-                        #print(f"making directory {outpath}")
-                        os.makedirs(outpath)
+                        if args.dry_run:
+                            print(f"making directory {outpath}")
+                        else:
+                            os.makedirs(outpath)
                     if not os.path.isfile(out) or args.force:
                         print(f"making neutral test {out}")
-                        with open(out, "w") as outfile:
-                            outfile.write(f"{IMPORT_PREFIX} {os.path.relpath(entry, os.path.dirname(out))}\n")
-                            outfile.write('mmRenderNextFrame()\nmmRenderNextFrame()\nmmScreenshot("result.png")\nmmQuit()\n')
+                        if not args.dry_run:
+                            with open(out, "w") as outfile:
+                                outfile.write(f"{IMPORT_PREFIX} {os.path.relpath(entry, os.path.dirname(out))}\n")
+                                outfile.write('mmRenderNextFrame()\nmmRenderNextFrame()\nmmScreenshot("result.png")\nmmQuit()\n')
     exit(0)
 
 for directory in args.directories:
@@ -89,9 +95,11 @@ for directory in args.directories:
                             deps.append(os.path.abspath(os.path.join(subdir, dep)))
                             #print(f"found test for {deps}: {entry}")
                     commandline = "megamol.exe --nogui " + ' '.join(deps) + ' ' + entry
-                    #print(f"would exec: {commandline}")
                     refname, stdoutname, stderrname = test_to_output(entry)
-                    #print(f"would expect same result as {refname}, stdout {stdoutname}, stderr {stderrname}")
+                    if args.dry_run:
+                        print(f"would exec: {commandline}")
+                        print(f"would expect same result as {refname}, stdout {stdoutname}, stderr {stderrname}")
+                        continue
                     if os.path.isfile(RESULT_NAME):
                         os.remove(RESULT_NAME)
                     if CAPTURE_STDOUT and os.path.isfile(stdoutname):
@@ -153,7 +161,7 @@ for directory in args.directories:
                             testresults.append(tr)
                             print(f'unexpected exception: {exception}')
 
-if args.generate_reference:
+if args.generate_reference or args.dry_run:
     exit(0)
 
 if len(testresults) > 0:
