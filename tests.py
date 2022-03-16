@@ -1,10 +1,11 @@
-# example usage (from megamol install/bin):
-# build all neutral tests:
-# ..\..\tests\runtests.py y:\ssd_cache\src\megamol\build\vs-ninja-22\examples --generate-neutral-test
-# generate all references
-# ..\..\tests\runtests.py ..\..\tests --generate-reference
-# run tests
-# ..\..\test\runtests.py ..\..\tests
+# example usage:
+# build all neutral tests (from megamol build directory/tests):
+# tests.py ..\examples --generate-neutral-test
+# build & install megamol to copy them over
+# generate all references (from installed megamol bin dir):
+# ..\tests\tests.py ..\tests --generate-reference
+# run tests (from installed megamol bin dir):
+# ..\tests\tests.py ..\tests
 
 import argparse
 import os
