@@ -14,6 +14,7 @@ import pathlib
 from PIL import Image
 from SSIM_PIL import compare_ssim
 import subprocess
+from collections import Counter
 
 parser = argparse.ArgumentParser(usage="%(prog)s <DIRECTORY>", description="execute test scripts in DIRECTORY")
 parser.add_argument('directories', nargs="*")
@@ -120,7 +121,9 @@ for directory in args.directories:
                         print(f"failed running command line '{commandline}'':")
                         print(f"{exception}")
                         print(f"{exception.stdout.decode('utf-8')}")
-                        exit(1)
+                        tr.passed = False
+                        tr.result = "program exception"
+                        #exit(1)
                     if args.generate_reference:
                         try:
                             if args.force:
@@ -172,9 +175,12 @@ num_passed_tests = 0
 if len(testresults) > 0:
     print("\nRecap:")
     for tr in testresults:
-        print(f'{tr.testfile}: {"passed" if tr.passed else "failed"} {tr.result}')
+        print(f'{tr.testfile}: {"passed" if tr.passed else "failed"}, {tr.result}')
         if tr.passed:
             num_passed_tests = num_passed_tests + 1
+    histo = Counter(tr.result for tr in testresults if tr.passed==False)
+    for k,v in histo.items():
+        print(f"{k}: {v}")
     print(f"\nSummary: {num_passed_tests}/{num_found_tests} tests passed")
 else:
     print("no tests found.")
