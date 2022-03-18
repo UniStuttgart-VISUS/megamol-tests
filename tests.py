@@ -7,6 +7,11 @@
 # run tests (from installed megamol bin dir):
 # ..\tests\tests.py ..\tests
 
+# import sys
+# MIN_PYTHON = (3, 9)
+# if sys.version_info < MIN_PYTHON:
+#     sys.exit("Python %s.%s or later is required.\n" % MIN_PYTHON)
+
 import argparse
 import os
 import os.path
@@ -94,9 +99,9 @@ for directory in args.directories:
                     deps = []
                     for line in lines:
                         if line.startswith(IMPORT_PREFIX):
-                            dep = line.removeprefix(IMPORT_PREFIX).strip()
+                            dep = line[len(IMPORT_PREFIX):].strip()
                             #print(f"state: dir {directory} subdir {subdir} dep {dep}")
-                            deps.append(os.path.abspath(os.path.join(subdir, dep)))
+                            deps.append(os.path.abspath(os.path.join(subdir, dep).replace("\\","/")))
                             #print(f"found test for {deps}: {entry}")
                     commandline = "megamol.exe --nogui " + ' '.join(deps) + ' ' + entry
                     refname, stdoutname, stderrname = test_to_output(entry)

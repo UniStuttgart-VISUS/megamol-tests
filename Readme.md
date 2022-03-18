@@ -14,7 +14,7 @@ The basic tests go into ``tests/projects`` and mirror the directory structure of
 Build & install MegaMol, this will install the tests as well.
 Change to your installation/bin directory and use
 ```
-..\tests\tests.py ..\tests --generate-reference
+python ..\tests\tests.py ..\tests --generate-reference
 ```
 to generate the reference images. They will be placed next to the installed tests. Check them and move the correct ones to the correct place in ```build/tests/projects```, where you can stage and commit them.
 
@@ -22,6 +22,6 @@ to generate the reference images. They will be placed next to the installed test
 Build & install MegaMol, this will install the tests as well.
 Change to your installation/bin directory and use
 ```
-..\tests\tests.py ..\tests
+python ..\tests\tests.py ..\tests
 ```
 This will output individual results and a summary.
