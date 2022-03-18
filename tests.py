@@ -30,6 +30,13 @@ parser.add_argument('--dry-run', action='count', help='only print actions withou
 args = parser.parse_args()
 
 RESULT_NAME = 'result.png'
+if os.name == 'nt':
+    EXECUTABLE = 'megamol.exe'
+    SHELL = False
+else: 
+    EXECUTABLE = './megamol.sh'
+    SHELL = True
+
 IMPORT_PREFIX = '--MM_TEST_IMPORT '
 testresults = []
 CAPTURE_STDOUT = True
@@ -103,7 +110,7 @@ for directory in args.directories:
                             #print(f"state: dir {directory} subdir {subdir} dep {dep}")
                             deps.append(os.path.abspath(os.path.join(subdir, dep).replace("\\","/")))
                             #print(f"found test for {deps}: {entry}")
-                    commandline = "megamol.exe --nogui " + ' '.join(deps) + ' ' + entry
+                    commandline = f"{EXECUTABLE} --nogui " + ' '.join(deps) + ' ' + entry
                     refname, stdoutname, stderrname = test_to_output(entry)
                     if args.dry_run:
                         print(f"would exec: {commandline}")
@@ -121,7 +128,7 @@ for directory in args.directories:
                     tr.testfile=entry
                     tr.passed=True
                     try:
-                        compl = subprocess.run(commandline, capture_output=True, check=True)
+                        compl = subprocess.run(commandline, capture_output=True, check=True, shell=SHELL)
                     except subprocess.CalledProcessError as exception:
                         print(f"failed running command line '{commandline}'':")
                         print(f"{exception}")
