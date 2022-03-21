@@ -7,11 +7,6 @@
 # run tests (from installed megamol bin dir):
 # ..\tests\tests.py ..\tests
 
-# import sys
-# MIN_PYTHON = (3, 9)
-# if sys.version_info < MIN_PYTHON:
-#     sys.exit("Python %s.%s or later is required.\n" % MIN_PYTHON)
-
 import argparse
 import os
 import os.path
@@ -50,13 +45,23 @@ class TestResult:
 
 def test_to_output(entry_path):
     file_name_only, _ = os.path.splitext(entry_path)
-    return file_name_only + ".png", file_name_only + ".stdout", file_name_only + ".stderr"
+    return file_name_only + ".png", file_name_only + ".stdout", file_name_only + ".stderr", file_name_only + ".failure.png"
 
 def compare_images(reference, result):
     reference_image = Image.open(reference)
     result_image = Image.open(result)
     ssim_score = compare_ssim(reference_image, result_image, GPU=False)
     return ssim_score
+
+def dump_output(compl, stdoutname, stderrname, imagename):
+    if compl != None:
+        if CAPTURE_STDOUT:
+            with open(stdoutname, "w") as outfile:
+                outfile.write(compl.stdout.decode('utf-8'))
+        if CAPTURE_STDERR:
+            with open(stderrname, "w") as outfile:
+                outfile.write(compl.stderr.decode('utf-8'))
+    os.replace(RESULT_NAME, imagename)
 
 if not args.directories:
     print("need at least one input directory")
@@ -111,13 +116,15 @@ for directory in args.directories:
                             deps.append(os.path.abspath(os.path.join(subdir, dep).replace("\\","/")))
                             #print(f"found test for {deps}: {entry}")
                     commandline = f"{EXECUTABLE} --nogui " + ' '.join(deps) + ' ' + entry
-                    refname, stdoutname, stderrname = test_to_output(entry)
+                    refname, stdoutname, stderrname, imgname = test_to_output(entry)
                     if args.dry_run:
                         print(f"would exec: {commandline}")
                         print(f"would expect same result as {refname}, stdout {stdoutname}, stderr {stderrname}")
                         continue
                     if os.path.isfile(RESULT_NAME):
                         os.remove(RESULT_NAME)
+                    if os.path.isfile(imgname):
+                        os.remove(imgname)
                     if CAPTURE_STDOUT and os.path.isfile(stdoutname):
                         os.remove(stdoutname)
                     if CAPTURE_STDERR and os.path.isfile(stderrname):
@@ -158,12 +165,7 @@ for directory in args.directories:
                                 else:
                                     print(f'failed ({ssim})')
                                     tr.passed = False
-                                    if CAPTURE_STDOUT:
-                                        with open(stdoutname, "w") as outfile:
-                                            outfile.write(compl.stdout.decode('utf-8'))
-                                    if CAPTURE_STDERR:
-                                        with open(stderrname, "w") as outfile:
-                                            outfile.write(compl.stderr.decode('utf-8'))
+                                    dump_output(compl, stdoutname, stderrname, imgname)
 
                                 tr.result = f'SSIM = {ssim}'
                                 testresults.append(tr)
@@ -172,6 +174,8 @@ for directory in args.directories:
                                 tr.passed = False
                                 testresults.append(tr)
                                 print(f'unexpected exception: {exception}')
+                                dump_output(compl, stdoutname, stderrname, imgname)
+
 
                     except subprocess.CalledProcessError as exception:
                         print(f"failed running command line '{commandline}'':")
@@ -180,6 +184,7 @@ for directory in args.directories:
                         tr.passed = False
                         tr.result = "program exception"
                         testresults.append(tr)
+                        dump_output(None, stdoutname, stderrname, imgname)
                         #exit(1)
 
 if args.generate_reference or args.dry_run:
