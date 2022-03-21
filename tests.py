@@ -129,56 +129,58 @@ for directory in args.directories:
                     tr.passed=True
                     try:
                         compl = subprocess.run(commandline, capture_output=True, check=True, shell=SHELL)
+                        if args.generate_reference:
+                            try:
+                                if args.force:
+                                    os.replace(RESULT_NAME, refname)
+                                else:
+                                    os.rename(RESULT_NAME, refname)
+                                print('generated reference')
+                            except OSError as exception:
+                                print(f'could not move {RESULT_NAME} to {refname}: {exception}')
+                        else:
+                            if not os.path.isfile(RESULT_NAME):
+                                print('failed')
+                                tr.passed = False
+                                tr.result = "no output generated"
+                                testresults.append(tr)
+                                continue
+                            if not os.path.isfile(refname):
+                                print('failed')
+                                tr.passed = False
+                                tr.result = "missing reference image"
+                                testresults.append(tr)
+                                continue
+                            try:
+                                ssim = compare_images(refname, RESULT_NAME)
+                                if ssim > ssim_threshold:
+                                    print(f'passed ({ssim})')
+                                else:
+                                    print(f'failed ({ssim})')
+                                    tr.passed = False
+                                    if CAPTURE_STDOUT:
+                                        with open(stdoutname, "w") as outfile:
+                                            outfile.write(compl.stdout.decode('utf-8'))
+                                    if CAPTURE_STDERR:
+                                        with open(stderrname, "w") as outfile:
+                                            outfile.write(compl.stderr.decode('utf-8'))
+
+                                tr.result = f'SSIM = {ssim}'
+                                testresults.append(tr)
+                            except Exception as exception:
+                                tr.result = exception
+                                tr.passed = False
+                                testresults.append(tr)
+                                print(f'unexpected exception: {exception}')
+
                     except subprocess.CalledProcessError as exception:
                         print(f"failed running command line '{commandline}'':")
                         print(f"{exception}")
                         print(f"{exception.stdout.decode('utf-8')}")
                         tr.passed = False
                         tr.result = "program exception"
+                        testresults.append(tr)
                         #exit(1)
-                    if args.generate_reference:
-                        try:
-                            if args.force:
-                                os.replace(RESULT_NAME, refname)
-                            else:
-                                os.rename(RESULT_NAME, refname)
-                            print('generated reference')
-                        except OSError as exception:
-                            print(f'could not move {RESULT_NAME} to {refname}: {exception}')
-                    else:
-                        if not os.path.isfile(RESULT_NAME):
-                            print('failed')
-                            tr.passed = False
-                            tr.result = "no output generated"
-                            testresults.append(tr)
-                            continue
-                        if not os.path.isfile(refname):
-                            print('failed')
-                            tr.passed = False
-                            tr.result = "missing reference image"
-                            testresults.append(tr)
-                            continue
-                        try:
-                            ssim = compare_images(refname, RESULT_NAME)
-                            if ssim > ssim_threshold:
-                                print(f'passed ({ssim})')
-                            else:
-                                print(f'failed ({ssim})')
-                                tr.passed = False
-                                if CAPTURE_STDOUT:
-                                    with open(stdoutname, "w") as outfile:
-                                        outfile.write(compl.stdout)
-                                if CAPTURE_STDERR:
-                                    with open(stderrname, "w") as outfile:
-                                        outfile.write(compl.stderr)
-
-                            tr.result = f'SSIM = {ssim}'
-                            testresults.append(tr)
-                        except Exception as exception:
-                            tr.result = exception
-                            tr.passed = False
-                            testresults.append(tr)
-                            print(f'unexpected exception: {exception}')
 
 if args.generate_reference or args.dry_run:
     exit(0)
