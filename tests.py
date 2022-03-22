@@ -158,6 +158,9 @@ for directory in args.directories:
                         os.remove(stdoutname)
                     if CAPTURE_STDERR and os.path.isfile(stderrname):
                         os.remove(stderrname)
+                    if args.generate_reference and not args.force and os.path.isfile(refname):
+                        print(f"skipping test {entry}.")
+                        continue
                     print(f"running test {entry}... ", end='')
                     num_found_tests = num_found_tests + 1
                     tr = TestResult()
