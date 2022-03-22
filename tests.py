@@ -219,8 +219,9 @@ for directory in args.directories:
                         report_string = dump_output(directory, None, stdoutname, stderrname, imgname, refname, tr, report_string, exception.stdout.decode('utf-8'))
                         #exit(1)
     report_string += report_bottom
-    with open(report_path, "w", encoding="utf-8") as reportfile:
-        reportfile.write(report_string)
+    if not args.generate_reference and not args.dry_run:
+        with open(report_path, "w", encoding="utf-8") as reportfile:
+            reportfile.write(report_string)
 
 
 if args.generate_reference or args.dry_run:
