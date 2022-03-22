@@ -15,6 +15,8 @@ from PIL import Image
 from SSIM_PIL import compare_ssim
 import subprocess
 from collections import Counter
+from report_data import *
+from datetime import date
 
 parser = argparse.ArgumentParser(usage="%(prog)s <DIRECTORY>", description="execute test scripts in DIRECTORY")
 parser.add_argument('directories', nargs="*")
@@ -53,7 +55,7 @@ def compare_images(reference, result):
     ssim_score = compare_ssim(reference_image, result_image, GPU=False)
     return ssim_score
 
-def dump_output(compl, stdoutname, stderrname, imagename):
+def dump_output(compl, stdoutname, stderrname, imagename, referencename, tr, reportstring, details = ""):
     if compl != None:
         if CAPTURE_STDOUT:
             with open(stdoutname, "w") as outfile:
@@ -62,6 +64,25 @@ def dump_output(compl, stdoutname, stderrname, imagename):
             with open(stderrname, "w") as outfile:
                 outfile.write(compl.stderr.decode('utf-8'))
     os.replace(RESULT_NAME, imagename)
+
+    reportstring += f"""
+<button class="test coloredblock">{tr.testfile}: {tr.result}</button>
+<div class="testcontent coloredblock">
+  <table width="80%">
+      <tr><td width="40%">Reference</td><td width="40%">Result</td>
+  </table>
+  <img src="../install/tests/projects/imageviewer/picviewer.1.png" width="40%"/><img src="{imagename}" width="40%"/>
+  <button class="output coloredblock">stdout</button>
+  <div class="outputcontent">
+      <pre>{compl.stdout.decode('utf-8') if compl != None else details}</pre>
+  </div>
+  <button class="output coloredblock">stderr</button>
+  <div class="outputcontent">
+      <pre>{compl.stderr.decode('utf-8') if compl != None else "&nbsp;"}</pre>
+  </div>
+</div>
+    """
+    return reportstring
 
 if not args.directories:
     print("need at least one input directory")
@@ -102,6 +123,11 @@ if args.generate_neutral_test:
 num_found_tests = 0
 
 for directory in args.directories:
+    report_string = report_top
+    report_string += f"""
+        <h2>MegaMol regression test report:{directory} {date.today()}</h2>
+    """
+    report_path = os.path.join(directory, "report.html")
     for subdir, dirs, files in os.walk(directory, topdown=True):
         for file in files:
             entry = os.path.join(subdir, file)
@@ -125,6 +151,8 @@ for directory in args.directories:
                         os.remove(RESULT_NAME)
                     if os.path.isfile(imgname):
                         os.remove(imgname)
+                    if os.path.isfile(report_path):
+                        os.remove(report_path)
                     if CAPTURE_STDOUT and os.path.isfile(stdoutname):
                         os.remove(stdoutname)
                     if CAPTURE_STDERR and os.path.isfile(stderrname):
@@ -160,21 +188,21 @@ for directory in args.directories:
                                 continue
                             try:
                                 ssim = compare_images(refname, RESULT_NAME)
+                                tr.result = f'SSIM = {ssim}'
                                 if ssim > ssim_threshold:
                                     print(f'passed ({ssim})')
                                 else:
                                     print(f'failed ({ssim})')
                                     tr.passed = False
-                                    dump_output(compl, stdoutname, stderrname, imgname)
-
-                                tr.result = f'SSIM = {ssim}'
+                                    report_string = dump_output(compl, stdoutname, stderrname, imgname, refname, tr, report_string)
                                 testresults.append(tr)
+
                             except Exception as exception:
                                 tr.result = exception
                                 tr.passed = False
                                 testresults.append(tr)
                                 print(f'unexpected exception: {exception}')
-                                dump_output(compl, stdoutname, stderrname, imgname)
+                                report_string = dump_output(compl, stdoutname, stderrname, imgname, refname, tr, report_string)
 
 
                     except subprocess.CalledProcessError as exception:
@@ -184,8 +212,12 @@ for directory in args.directories:
                         tr.passed = False
                         tr.result = "program exception"
                         testresults.append(tr)
-                        dump_output(None, stdoutname, stderrname, imgname)
+                        report_string = dump_output(None, stdoutname, stderrname, imgname, refname, tr, report_string, exception.stdout.decode('utf-8'))
                         #exit(1)
+    report_string += report_bottom
+    with open(report_path, "w", encoding="utf-8") as reportfile:
+        reportfile.write(report_string)
+
 
 if args.generate_reference or args.dry_run:
     exit(0)
