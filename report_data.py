@@ -17,21 +17,26 @@ report_top = """
 .test {
   background-color: #80c0ff;
   color: black;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.failed {
+  background-color: #ffd780;
+  color: black;
+  padding-top: 18px;
+  padding-bottom: 18px;
 }
 
 .output {
   background-color: #ffd780;
   color: black;
+  padding-top: 6px;
+  padding-bottom: 6px;
 }
 
-.activetest, .test:hover {
-  background-color: #1089FF;
-  color: white
-}
-
-.activeoutput, .output:hover {
-  background-color: #B17900;
-  color: white;
+.activetest, .test:hover, .activeoutput, .output:hover, .failed:hover {
+  filter: drop-shadow(4px 4px 4px black);
 }
 
 .test:after, .output:after {

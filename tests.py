@@ -55,8 +55,8 @@ def compare_images(reference, result):
     ssim_score = compare_ssim(reference_image, result_image, GPU=False)
     return ssim_score
 
-def dump_output(compl, stdoutname, stderrname, imagename, referencename, tr, reportstring, details = ""):
-    if compl != None:
+def dump_output(basedir, compl, stdoutname, stderrname, imagename, referencename, tr, reportstring, details = ""):
+    if compl != None and not tr.passed:
         if CAPTURE_STDOUT:
             with open(stdoutname, "w") as outfile:
                 outfile.write(compl.stdout.decode('utf-8'))
@@ -66,17 +66,18 @@ def dump_output(compl, stdoutname, stderrname, imagename, referencename, tr, rep
     os.replace(RESULT_NAME, imagename)
 
     reportstring += f"""
-<button class="test coloredblock">{tr.testfile}: {tr.result}</button>
+<button class="test coloredblock{' failed' if not tr.passed else ''}">{tr.testfile}: {tr.result}</button>
 <div class="testcontent coloredblock">
+  <p></p>
   <table width="80%">
       <tr><td width="40%">Reference</td><td width="40%">Result</td>
   </table>
-  <img src="{os.path.split(referencename)[1]}" width="40%"/><img src="{os.path.split(imagename)[1]}" width="40%"/>
-  <button class="output coloredblock">stdout</button>
+  <img src="{os.path.relpath(referencename, basedir)}" width="40%"/><img src="{os.path.relpath(imagename, basedir)}" width="40%"/>
+  <button class="coloredblock output">stdout</button>
   <div class="outputcontent">
       <pre>{compl.stdout.decode('utf-8') if compl != None else details}</pre>
   </div>
-  <button class="output coloredblock">stderr</button>
+  <button class="coloredblock output">stderr</button>
   <div class="outputcontent">
       <pre>{compl.stderr.decode('utf-8') if compl != None else "&nbsp;"}</pre>
   </div>
@@ -194,7 +195,7 @@ for directory in args.directories:
                                 else:
                                     print(f'failed ({ssim})')
                                     tr.passed = False
-                                    report_string = dump_output(compl, stdoutname, stderrname, imgname, refname, tr, report_string)
+                                report_string = dump_output(directory, compl, stdoutname, stderrname, imgname, refname, tr, report_string)
                                 testresults.append(tr)
 
                             except Exception as exception:
@@ -202,7 +203,7 @@ for directory in args.directories:
                                 tr.passed = False
                                 testresults.append(tr)
                                 print(f'unexpected exception: {exception}')
-                                report_string = dump_output(compl, stdoutname, stderrname, imgname, refname, tr, report_string)
+                                report_string = dump_output(directory, compl, stdoutname, stderrname, imgname, refname, tr, report_string)
 
 
                     except subprocess.CalledProcessError as exception:
@@ -212,7 +213,7 @@ for directory in args.directories:
                         tr.passed = False
                         tr.result = "program exception"
                         testresults.append(tr)
-                        report_string = dump_output(None, stdoutname, stderrname, imgname, refname, tr, report_string, exception.stdout.decode('utf-8'))
+                        report_string = dump_output(directory, None, stdoutname, stderrname, imgname, refname, tr, report_string, exception.stdout.decode('utf-8'))
                         #exit(1)
     report_string += report_bottom
     with open(report_path, "w", encoding="utf-8") as reportfile:
