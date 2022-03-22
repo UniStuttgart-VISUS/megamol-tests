@@ -50,10 +50,10 @@ def test_to_output(entry_path):
     return file_name_only + ".png", file_name_only + ".stdout", file_name_only + ".stderr", file_name_only + ".failure.png"
 
 def compare_images(reference, result):
-    reference_image = Image.open(reference)
-    result_image = Image.open(result)
-    ssim_score = compare_ssim(reference_image, result_image, GPU=False)
-    return ssim_score
+    with Image.open(reference) as reference_image:
+        with Image.open(result) as result_image:
+            ssim_score = compare_ssim(reference_image, result_image, GPU=False)
+            return ssim_score
 
 def dump_output(basedir, compl, stdoutname, stderrname, imagename, referencename, tr, reportstring, details = ""):
     if compl != None and not tr.passed:
