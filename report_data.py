@@ -4,6 +4,10 @@ report_top = """
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
+table {
+  border-spacing: 0;
+}
+
 .coloredblock {
   cursor: pointer;
   padding: 18px;
@@ -33,6 +37,7 @@ report_top = """
   color: black;
   padding-top: 6px;
   padding-bottom: 6px;
+  width: 90%;
 }
 
 .activetest, .test:hover, .activeoutput, .output:hover, .failed:hover {
@@ -69,6 +74,7 @@ report_top = """
   overflow: hidden;
   transition: max-height 0.2s ease-out;
   background-color: #f1f1f1;
+  width: 90%;
 }
 </style>
 </head>

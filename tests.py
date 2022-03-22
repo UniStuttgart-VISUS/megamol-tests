@@ -69,10 +69,10 @@ def dump_output(basedir, compl, stdoutname, stderrname, imagename, referencename
 <button class="test coloredblock{' failed' if not tr.passed else ''}">{tr.testfile}: {tr.result}</button>
 <div class="testcontent coloredblock">
   <p></p>
-  <table width="80%">
-      <tr><td width="40%">Reference</td><td width="40%">Result</td>
+  <table width="90%">
+    <tr><td width="43%">Reference</td><td width="4%">&nbsp;</td><td width="43%">Result</td></tr>
+    <tr><td><img src="{os.path.relpath(referencename, basedir)}" width="100%"/></td><td/><td><img src="{os.path.relpath(imagename, basedir)}" width="100%"/></td></tr>
   </table>
-  <img src="{os.path.relpath(referencename, basedir)}" width="40%"/><img src="{os.path.relpath(imagename, basedir)}" width="40%"/>
   <button class="coloredblock output">stdout</button>
   <div class="outputcontent">
       <pre>{compl.stdout.decode('utf-8') if compl != None else details}</pre>
