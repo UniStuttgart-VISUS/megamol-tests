@@ -71,7 +71,7 @@ def dump_output(compl, stdoutname, stderrname, imagename, referencename, tr, rep
   <table width="80%">
       <tr><td width="40%">Reference</td><td width="40%">Result</td>
   </table>
-  <img src="../install/tests/projects/imageviewer/picviewer.1.png" width="40%"/><img src="{imagename}" width="40%"/>
+  <img src="{os.path.split(referencename)[1]}" width="40%"/><img src="{os.path.split(imagename)[1]}" width="40%"/>
   <button class="output coloredblock">stdout</button>
   <div class="outputcontent">
       <pre>{compl.stdout.decode('utf-8') if compl != None else details}</pre>
