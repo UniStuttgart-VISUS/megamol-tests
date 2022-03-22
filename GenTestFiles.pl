@@ -202,7 +202,8 @@ foreach my $r (@renderer_modes) {
 
         print $fh qq{mmSetGUIVisible(false)\n};
         print $fh qq{mmRenderNextFrame()\n};
-        print $fh qq{mmScreenshot([[$proj.png]])\n};
+        print $fh qq{mmRenderNextFrame()\n};
+        print $fh qq{mmScreenshot([[result.png]])\n};
         print $fh qq{mmQuit()\n};
 
         close $fh;
