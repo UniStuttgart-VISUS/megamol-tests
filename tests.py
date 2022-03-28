@@ -126,7 +126,10 @@ num_found_tests = 0
 for directory in args.directories:
     report_string = report_top
     report_string += f"""
-        <h2>MegaMol regression test report:{directory} {date.today()}</h2>
+<h2>MegaMol regression test report:{directory} {date.today()}</h2>
+<p>
+SSIM Threshold <input type="number" step="0.01" name="SSIM_Threshold" value="0.98">
+</p>
     """
     report_path = os.path.join(directory, "report.html")
     for subdir, dirs, files in os.walk(directory, topdown=True):

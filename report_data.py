@@ -117,6 +117,24 @@ for (i = 0; i < coll2.length; i++) {
   });
 }
 
+var thresh = document.getElementsByName("SSIM_Threshold")[0]
+var search_thing = "SSIM = "
+thresh.addEventListener("input", function(e) {
+  var ref_num = parseFloat(thresh.value)
+    for (i = 0; i < coll.length; i++) {
+    var off = coll[i].textContent.indexOf(search_thing)
+    var maybe_num = coll[i].textContent.substring(off + search_thing.length)
+        var num = parseFloat(maybe_num)
+    if (num < ref_num) {
+      if (!coll[i].classList.contains("failed")) {
+        coll[i].classList.add("failed")
+      }
+    } else {
+      coll[i].classList.remove("failed")
+    }
+  }
+})
+
 </script>
 
 </body>
