@@ -76,6 +76,24 @@ table {
   background-color: #f1f1f1;
   width: 90%;
 }
+
+.img-diff-container {
+  position: relative;
+  width: 100%;
+}
+
+.img-diff-reference {
+  display: block;
+  width: 100%;
+}
+
+.img-diff-result {
+  position: absolute;
+  bottom: 0;
+  mix-blend-mode: difference;
+  z-index: 2;
+  width: 100%;
+}
 </style>
 </head>
 <body>

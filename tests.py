@@ -72,6 +72,11 @@ def dump_output(basedir, compl, stdoutname, stderrname, imagename, referencename
   <table width="90%">
     <tr><td width="43%">Reference</td><td width="4%">&nbsp;</td><td width="43%">Result</td></tr>
     <tr><td><img src="{os.path.relpath(referencename, basedir)}" width="100%"/></td><td/><td><img src="{os.path.relpath(imagename, basedir)}" width="100%"/></td></tr>
+    <tr><td width="43%">Difference</td><td width="4%">&nbsp;</td><td width="43%"></td></tr>
+    <tr><td><div class="img-diff-container">
+      <img src="{os.path.relpath(referencename, basedir)}" class="img-diff-reference" />
+      <img src="{os.path.relpath(imagename, basedir)}" class="img-diff-result" />
+    </div></td></tr>
   </table>
   <button class="coloredblock output">stdout</button>
   <div class="outputcontent">
