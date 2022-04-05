@@ -127,6 +127,7 @@ if args.generate_neutral_test:
     exit(0)
 
 num_found_tests = 0
+curr_test_idx = 0
 
 for directory in args.directories:
     report_string = report_top
@@ -141,6 +142,12 @@ SSIM Threshold <input type="number" step="0.01" name="SSIM_Threshold" value="0.9
         for file in files:
             entry = os.path.join(subdir, file)
             if entry.endswith('.lua'):
+                num_found_tests += 1
+
+    for subdir, dirs, files in os.walk(directory, topdown=True):
+        for file in files:
+            entry = os.path.join(subdir, file)
+            if entry.endswith('.lua'):
                 with open(entry) as infile:
                     lines = infile.readlines()
                     deps = []
@@ -150,7 +157,7 @@ SSIM Threshold <input type="number" step="0.01" name="SSIM_Threshold" value="0.9
                             #print(f"state: dir {directory} subdir {subdir} dep {dep}")
                             deps.append(os.path.abspath(os.path.join(subdir, dep).replace("\\","/")))
                             #print(f"found test for {deps}: {entry}")
-                    commandline = f"{EXECUTABLE} --nogui " + ' '.join(deps) + ' ' + entry
+                    commandline = f"{EXECUTABLE} --nogui --hidden --window 1920x1080 " + ' '.join(deps) + ' ' + entry
                     refname, stdoutname, stderrname, imgname = test_to_output(entry)
                     if args.dry_run:
                         print(f"would exec: {commandline}")
@@ -169,8 +176,8 @@ SSIM Threshold <input type="number" step="0.01" name="SSIM_Threshold" value="0.9
                     if args.generate_reference and not args.force and os.path.isfile(refname):
                         print(f"skipping test {entry}.")
                         continue
-                    print(f"running test {entry}... ", end='')
-                    num_found_tests = num_found_tests + 1
+                    print(f"running test {curr_test_idx}/{num_found_tests}{entry}... ", end='', flush=True)
+                    curr_test_idx += 1
                     tr = TestResult()
                     tr.testfile=entry
                     tr.passed=True
@@ -244,7 +251,7 @@ if len(testresults) > 0:
             num_passed_tests = num_passed_tests + 1
     histo = Counter(tr.result for tr in testresults if tr.passed==False)
     for k,v in histo.items():
-        print(f"{k}: {v}")
+        print(f"{k}: {v} time(s)")
     print(f"\nSummary: {num_passed_tests}/{num_found_tests} tests passed")
 else:
     print("no tests found.")
