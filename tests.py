@@ -47,7 +47,7 @@ class TestResult:
 
 def test_to_output(entry_path):
     file_name_only, _ = os.path.splitext(entry_path)
-    return file_name_only + ".png", file_name_only + ".stdout", file_name_only + ".stderr", file_name_only + ".failure.png"
+    return file_name_only + ".png", file_name_only + ".stdout", file_name_only + ".stderr", file_name_only + ".output.png"
 
 def compare_images(reference, result):
     with Image.open(reference) as reference_image:
@@ -123,7 +123,7 @@ if args.generate_neutral_test:
                         if not args.dry_run:
                             with open(out, "w") as outfile:
                                 outfile.write(f"{IMPORT_PREFIX} {os.path.relpath(entry, os.path.dirname(out))}\n")
-                                outfile.write('mmSetGUIVisible(false)\nmmRenderNextFrame()\nmmRenderNextFrame()\nmmScreenshot("result.png")\nmmQuit()\n')
+                                outfile.write('mmRenderNextFrame()\nmmScreenshot("result.png")\nmmQuit()\n')
     exit(0)
 
 num_found_tests = 0
@@ -157,7 +157,7 @@ SSIM Threshold <input type="number" step="0.01" name="SSIM_Threshold" value="0.9
                             #print(f"state: dir {directory} subdir {subdir} dep {dep}")
                             deps.append(os.path.abspath(os.path.join(subdir, dep).replace("\\","/")))
                             #print(f"found test for {deps}: {entry}")
-                    commandline = f"{EXECUTABLE} --nogui --hidden --window 1920x1080 " + ' '.join(deps) + ' ' + entry
+                    commandline = f"{EXECUTABLE} --nogui --privacynote=false --hidden --window 1920x1080 " + ' '.join(deps) + ' ' + entry
                     refname, stdoutname, stderrname, imgname = test_to_output(entry)
                     if args.dry_run:
                         print(f"would exec: {commandline}")
