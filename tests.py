@@ -63,7 +63,7 @@ def dump_output(basedir, compl, stdoutname, stderrname, imagename, referencename
         if CAPTURE_STDERR:
             with open(stderrname, "w") as outfile:
                 outfile.write(compl.stderr.decode('utf-8'))
-    if file.path.exists(RESULT_NAME):
+    if os.path.exists(RESULT_NAME):
         os.replace(RESULT_NAME, imagename)
     else:
         print("no result image")
