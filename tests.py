@@ -18,8 +18,8 @@ from collections import Counter
 from report_data import *
 from datetime import date
 
-parser = argparse.ArgumentParser(usage="%(prog)s <DIRECTORY>", description="execute test scripts in DIRECTORY")
-parser.add_argument('directories', nargs="*")
+parser = argparse.ArgumentParser(usage="%(prog)s [PATH]...", description="execute test scripts in PATH")
+parser.add_argument('paths', nargs="*")
 parser.add_argument('--generate-reference', action='count', help='Generate reference pngs instead of testing against them')
 parser.add_argument('--generate-neutral-test', action='count', help='Generate a first basic test (.1) for all found projects. Supply, e.g., the MegaMol build/examples folder as argument to generate a build/tests folder.')
 parser.add_argument('--force', action='count', help='force overwriting files')
@@ -93,14 +93,25 @@ def dump_output(basedir, compl, stdoutname, stderrname, imagename, referencename
     """
     return reportstring
 
-if not args.directories:
-    print("need at least one input directory")
+if not args.paths:
+    print("need at least one input path")
     exit(1)
 
 if args.generate_neutral_test:
-    for directory in args.directories:
-        parent = os.path.abspath(os.path.join(directory, os.pardir))
-        for subdir, dirs, files in os.walk(directory, topdown=True):
+    for path in args.paths:
+        if os.path.isdir(path):
+            directory = path
+            parent = os.path.abspath(os.path.join(directory, os.pardir))
+            job_list = [(subdir, files) for subdir, _, files in os.walk(directory, topdown=True)]
+        elif os.path.isfile(path):
+            subdir = os.path.abspath(pathlib.Path(path).parent)
+            parent = os.path.abspath(pathlib.Path(path).parent.parent)
+            job_list = [(subdir, [os.path.basename(path)])]
+
+        # print(f"parent {parent}")
+        # for subdir, files in job_list:
+        #     print(f"{subdir} {files}")
+        for subdir, files in job_list:
             relpath = os.path.relpath(subdir, parent)
             pp = list(pathlib.Path(relpath).parts)
             pp[0] = "tests"
