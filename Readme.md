@@ -24,7 +24,7 @@ Change to your installation/bin directory and use
 ```
 python ..\tests\tests.py ..\tests
 ```
-This will output individual results and a summary.
+This will output individual results and a summary, plus a ``report.html`` in the respective directory.
 
 ### Single file mode
 
