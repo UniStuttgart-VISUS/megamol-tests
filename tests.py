@@ -93,21 +93,24 @@ def dump_output(basedir, compl, stdoutname, stderrname, imagename, referencename
     """
     return reportstring
 
+def dirs_and_jobs(path):
+    if os.path.isdir(path):
+        directory = os.path.abspath(path)
+        parent = os.path.abspath(os.path.join(directory, os.pardir))
+        job_list = [(subdir, files) for subdir, _, files in os.walk(directory, topdown=True)]
+    elif os.path.isfile(path):
+        directory = os.path.abspath(pathlib.Path(path).parent)
+        parent = os.path.abspath(pathlib.Path(path).parent.parent)
+        job_list = [(directory, [os.path.basename(path)])]
+    return directory, parent, job_list
+
 if not args.paths:
     print("need at least one input path")
     exit(1)
 
 if args.generate_neutral_test:
     for path in args.paths:
-        if os.path.isdir(path):
-            directory = path
-            parent = os.path.abspath(os.path.join(directory, os.pardir))
-            job_list = [(subdir, files) for subdir, _, files in os.walk(directory, topdown=True)]
-        elif os.path.isfile(path):
-            subdir = os.path.abspath(pathlib.Path(path).parent)
-            parent = os.path.abspath(pathlib.Path(path).parent.parent)
-            job_list = [(subdir, [os.path.basename(path)])]
-
+        directory, parent, job_list = dirs_and_jobs(path)
         # print(f"parent {parent}")
         # for subdir, files in job_list:
         #     print(f"{subdir} {files}")
@@ -143,22 +146,23 @@ if args.generate_neutral_test:
 num_found_tests = 0
 curr_test_idx = 0
 
-for directory in args.directories:
+for path in args.paths:
+    directory, parent, job_list = dirs_and_jobs(path)
     report_string = report_top
     report_string += f"""
-<h2>MegaMol regression test report:{directory} {date.today()}</h2>
+<h2>MegaMol regression test report:{path} {date.today()}</h2>
 <p>
 SSIM Threshold <input type="number" step="0.01" name="SSIM_Threshold" value="0.98">
 </p>
     """
     report_path = os.path.join(directory, "report.html")
-    for subdir, dirs, files in os.walk(directory, topdown=True):
+    for subdir, files in job_list:
         for file in files:
             entry = os.path.join(subdir, file)
             if entry.endswith('.lua'):
                 num_found_tests += 1
 
-    for subdir, dirs, files in os.walk(directory, topdown=True):
+    for subdir, files in job_list:
         for file in files:
             entry = os.path.join(subdir, file)
             if entry.endswith('.lua'):
@@ -190,7 +194,7 @@ SSIM Threshold <input type="number" step="0.01" name="SSIM_Threshold" value="0.9
                     if args.generate_reference and not args.force and os.path.isfile(refname):
                         print(f"skipping test {entry}.")
                         continue
-                    print(f"running test {curr_test_idx}/{num_found_tests}{entry}... ", end='', flush=True)
+                    print(f"running test {curr_test_idx}/{num_found_tests} {entry}... ", end='', flush=True)
                     curr_test_idx += 1
                     tr = TestResult()
                     tr.testfile=entry
