@@ -144,7 +144,7 @@ if args.generate_neutral_test:
     exit(0)
 
 num_found_tests = 0
-curr_test_idx = 0
+curr_test_idx = 1
 
 for path in args.paths:
     directory, parent, job_list = dirs_and_jobs(path)
