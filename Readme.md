@@ -16,7 +16,7 @@ Change to your installation/bin directory and use
 ```
 python ..\tests\tests.py ..\tests --generate-reference
 ```
-to generate the reference images. They will be placed next to the installed tests. Check them and move the correct ones to the correct place in ```build/tests/projects```, where you can stage and commit them.
+to generate the reference images. They will be placed next to the installed tests. Check them and move the correct ones to the correct place in ```build/tests/projects``` or a separate checkout of the ``megamol-tests`` repository, where you can stage and commit them.
 
 ### Running tests
 Build & install MegaMol, this will install the tests as well.
@@ -25,3 +25,11 @@ Change to your installation/bin directory and use
 python ..\tests\tests.py ..\tests
 ```
 This will output individual results and a summary.
+
+### Single file mode
+
+You can also pass single files to the test script to save time or update one specific reference image, for example
+```
+python ..\tests\tests.py ..\tests\projects\mesh_dfr_gltf_example.1.lua --generate-reference --force
+```
+Remember to check in the changed image.
