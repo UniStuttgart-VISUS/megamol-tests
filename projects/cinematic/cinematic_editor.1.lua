@@ -1,4 +1,4 @@
 --MM_TEST_IMPORT  ..\..\..\examples\cinematic\cinematic_editor.lua
---mmRenderNextFrame()
+mmRenderNextFrame()
 mmScreenshot("result.png")
 mmQuit()
